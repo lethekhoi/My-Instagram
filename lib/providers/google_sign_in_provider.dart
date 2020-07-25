@@ -21,23 +21,23 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider() {
     _auth = FirebaseAuth.instance;
     _googleSignIn = new GoogleSignIn();
-    // _checkCurrentUserIsAuthenticated();
+    _checkCurrentUserIsAuthenticated();
   }
 
-  // void _autoLogin() async {
-  //   if (user != null) {
-  //     await DBService.instance.updateUserLastSeen(user.uid);
-  //     return NavigationService.instance.navigateToReplacement("home");
-  //   }
-  // }
+  void _autoLogin() async {
+    if (user != null) {
+      // await DBService.instance.updateUserLastSeen(user.uid);
+      return NavigationService.instance.navigateToReplacement("home");
+    }
+  }
 
-  // void _checkCurrentUserIsAuthenticated() async {
-  //   user = await _auth.currentUser();
-  //   if (user != null) {
-  //     notifyListeners();
-  //     _autoLogin();
-  //   }
-  // }
+  void _checkCurrentUserIsAuthenticated() async {
+    user = await _auth.currentUser();
+    if (user != null) {
+      notifyListeners();
+      _autoLogin();
+    }
+  }
 
   // void loginUserWithEmailandPassWord(String _email, String _password) async {
   //   status = AuthStatus.Authenticating;
@@ -119,7 +119,7 @@ class AuthProvider extends ChangeNotifier {
       ));
       if (res.user != null) {
         user = res.user;
-
+        status = AuthStatus.Authenticated;
         NavigationService.instance.navigateToReplacement("home");
       }
     } catch (e) {

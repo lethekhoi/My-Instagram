@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               GestureDetector(
                 onTap: () async {
-                  await _auth.loginGoogle();
+                  _auth.loginGoogle();
                 },
                 child: Container(
                   margin: EdgeInsets.only(top: 10),
