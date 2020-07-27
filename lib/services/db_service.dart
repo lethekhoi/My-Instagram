@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:my_instagram/models/user.dart';
 
 class DBService {
   static DBService instance = DBService();
@@ -36,6 +37,20 @@ class DBService {
     } else {
       return false;
     }
+  }
+
+  Stream<List<User>> searchUser(String _searchName) {
+    var _ref = _db
+        .collection(_userCollection)
+        .where("profileName", isGreaterThanOrEqualTo: _searchName)
+        .where("profileName", isLessThanOrEqualTo: _searchName + 'z')
+        .getDocuments();
+
+    return _ref.asStream().map((_snapshot) {
+      return _snapshot.documents.map((_doc) {
+        return User.fromDocument(_doc);
+      }).toList();
+    });
   }
 
   // Future<void> updateImage(String _uid, String _imageURL) async {
