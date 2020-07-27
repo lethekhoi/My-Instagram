@@ -11,10 +11,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: header(
-        context,
-        title: "Profile",
-      ),
+      appBar: header(context, title: "Profile", disableBackbutton: true),
       body: circularProgress(),
     );
   }

@@ -13,7 +13,7 @@ class _TimeLinePageState extends State<TimeLinePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: header(context, isAppTitle: true),
+      appBar: header(context, isAppTitle: true,disableBackbutton: true),
       body: Container(
         child: ChangeNotifierProvider<AuthProvider>.value(
           value: AuthProvider.instance,

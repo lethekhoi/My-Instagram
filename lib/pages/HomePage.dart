@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:my_instagram/pages/ProfilePage.dart';
 import 'package:my_instagram/pages/SearchPage.dart';
 import 'package:my_instagram/pages/TimeLinePage.dart';
@@ -15,12 +17,14 @@ class _HomePageState extends State<HomePage> {
   PageController pageController;
   AuthProvider _auth;
   int getPageIndex = 0;
+  
+  
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     pageController = PageController();
+  
   }
 
   void dispose() {
@@ -45,17 +49,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        children: <Widget>[
-          TimeLinePage(),
-          SearchPage(),
-          TimeLinePage(),
-          TimeLinePage(),
-          ProfilePage(),
-        ],
-        controller: pageController,
-        onPageChanged: whenPageChanges,
-        physics: NeverScrollableScrollPhysics(),
+      body: ChangeNotifierProvider<AuthProvider>.value(
+        value: AuthProvider.instance,
+        child: _homePageUI(),
       ),
       bottomNavigationBar: CupertinoTabBar(
         currentIndex: getPageIndex,
@@ -78,16 +74,19 @@ class _HomePageState extends State<HomePage> {
     return Builder(
       builder: (BuildContext _context) {
         _auth = Provider.of<AuthProvider>(_context);
-        return Container(
-          color: Colors.red,
-          height: 100,
-          width: 100,
-          child: FlatButton(
-            onPressed: () {
-              _auth.logout();
-            },
-            child: Text("Log out"),
-          ),
+      //  DocumentSnapshot documentSnapshot = us;
+         print("user home ${_auth.user}");
+        return PageView(
+          children: <Widget>[
+            TimeLinePage(),
+            SearchPage(),
+            TimeLinePage(),
+            TimeLinePage(),
+            ProfilePage(),
+          ],
+          controller: pageController,
+          onPageChanged: whenPageChanges,
+          physics: NeverScrollableScrollPhysics(),
         );
       },
     );

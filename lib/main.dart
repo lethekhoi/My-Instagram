@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
+
 import 'package:my_instagram/pages/HomePage.dart';
 import 'package:my_instagram/pages/LoginPage.dart';
 import './services/navigation_service.dart';

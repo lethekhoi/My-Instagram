@@ -27,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
     return Builder(
       builder: (BuildContext _context) {
         _auth = Provider.of<AuthProvider>(_context);
-        print("user ${_auth.user}");
+        print("user login ${_auth.user}");
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(

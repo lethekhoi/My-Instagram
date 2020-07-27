@@ -9,7 +9,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: header(context, title: "Search"),
+      appBar: header(context, title: "Search",disableBackbutton: true),
       
     );
   }
