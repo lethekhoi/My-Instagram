@@ -7,7 +7,9 @@ class DBService {
   DBService() {
     _db = Firestore.instance;
   }
+
   String _userCollection = "Users";
+  String _userPost = "usersPosts";
   String _conversationCollection = "Conversations";
   Future<void> createUserInDB(String _uid, String _profileName,
       String _username, String _url, String _email) async {
@@ -53,6 +55,42 @@ class DBService {
     });
   }
 
+  Future<void> savePostInfoToFirestore(
+    String _uid,
+    var _posID,
+    String _username,
+    String _url,
+    String _location,
+    String _description,
+  ) async {
+    try {
+      return await _db
+          .collection(_userCollection)
+          .document(_uid)
+          .collection(_userPost)
+          .document(_posID)
+          .setData({
+        "posID": _posID,
+        "ownerID": _uid,
+        "timestamp": DateTime.now(),
+        "likes": {},
+        "username": _username,
+        "description": _description,
+        "location": _location,
+        "url": _url,
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Stream<User> getUserData(String _userID) {
+    var _ref = _db.collection(_userCollection).document(_userID);
+    return _ref.get().asStream().map((_snapshot) {
+      return User.fromDocument(_snapshot);
+    });
+  }
+
   // Future<void> updateImage(String _uid, String _imageURL) async {
   //   try {
   //     return await _db
@@ -77,13 +115,6 @@ class DBService {
   //   } catch (e) {
   //     print(e);
   //   }
-  // }
-
-  // Stream<Contact> getUserData(String _userID) {
-  //   var _ref = _db.collection(_userCollection).document(_userID);
-  //   return _ref.get().asStream().map((_snapshot) {
-  //     return Contact.fromFirestore(_snapshot);
-  //   });
   // }
 
   // Stream<List<Conversation>> getUserConversations(String _userID) {

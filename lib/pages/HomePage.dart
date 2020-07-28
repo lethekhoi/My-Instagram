@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:my_instagram/pages/ProfilePage.dart';
 import 'package:my_instagram/pages/SearchPage.dart';
 import 'package:my_instagram/pages/TimeLinePage.dart';
+import 'package:my_instagram/pages/UploadPage.dart';
 import 'package:my_instagram/providers/google_sign_in_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -17,14 +18,11 @@ class _HomePageState extends State<HomePage> {
   PageController pageController;
   AuthProvider _auth;
   int getPageIndex = 0;
-  
-  
 
   @override
   void initState() {
     super.initState();
     pageController = PageController();
-  
   }
 
   void dispose() {
@@ -74,15 +72,17 @@ class _HomePageState extends State<HomePage> {
     return Builder(
       builder: (BuildContext _context) {
         _auth = Provider.of<AuthProvider>(_context);
-      //  DocumentSnapshot documentSnapshot = us;
-         print("user home ${_auth.user}");
+        //  DocumentSnapshot documentSnapshot = us;
+        print("user home ${_auth.user}");
         return PageView(
           children: <Widget>[
             TimeLinePage(),
             SearchPage(),
+            UploadPage(),
             TimeLinePage(),
-            TimeLinePage(),
-            ProfilePage(),
+            ProfilePage(
+              userProfileID: _auth.user.uid,
+            ),
           ],
           controller: pageController,
           onPageChanged: whenPageChanges,
