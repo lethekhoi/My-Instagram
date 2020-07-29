@@ -44,49 +44,79 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _createProfileTopView() {
     return StreamBuilder<User>(
-        stream: DBService.instance.getUserData(this.widget.userProfileID),
-        builder: (context, snapshot) {
-          var _userData = snapshot.data;
-          return snapshot.hasData
-              ? Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10),
-                  child: Column(
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10.0),
-                            child: CircleAvatar(
-                              radius: 35,
-                              backgroundColor: Colors.lightBlueAccent,
-                              backgroundImage: NetworkImage(_userData.url),
-                            ),
+      stream: DBService.instance.getUserData(this.widget.userProfileID),
+      builder: (context, snapshot) {
+        var _userData = snapshot.data;
+        return snapshot.hasData
+            ? Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: CircleAvatar(
+                            radius: 35,
+                            backgroundColor: Colors.lightBlueAccent,
+                            backgroundImage: NetworkImage(_userData.url),
                           ),
-                          Expanded(
-                            flex: 1,
-                            child: Column(
-                              children: <Widget>[
-                                Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: <Widget>[
-                                    createColumns("Posts", 0),
-                                    createColumns("Followers", 0),
-                                    createColumns("Following", 0),
-                                  ],
-                                ),
-                              ],
-                            ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            children: <Widget>[
+                              Row(
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: <Widget>[
+                                  createColumns("Posts", 0),
+                                  createColumns("Followers", 0),
+                                  createColumns("Following", 0),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10, left: 15),
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _userData.profileName,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      createButton(),
-                    ],
-                  ),
-                )
-              : circularProgress();
-        });
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5, left: 15),
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _userData.bio,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5.0),
+                      child: createButton(),
+                    ),
+                  ],
+                ),
+              )
+            : circularProgress();
+      },
+    );
   }
 
   Column createColumns(String title, int count) {
@@ -158,7 +188,7 @@ class _ProfilePageState extends State<ProfilePage> {
     NavigationService.instance.navigateToRoute(
       MaterialPageRoute(
         builder: (BuildContext _context) {
-          return EditProfilePage();
+          return EditProfilePage(userProfileID: _auth.user.uid);
         },
       ),
     );

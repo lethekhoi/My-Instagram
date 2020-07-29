@@ -91,18 +91,26 @@ class DBService {
     });
   }
 
-  // Future<void> updateImage(String _uid, String _imageURL) async {
-  //   try {
-  //     return await _db
-  //         .collection(_userCollection)
-  //         .document(_uid)
-  //         .updateData({"image": _imageURL}).then((_) {
-  //       print("update image success");
-  //     });
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
+  Future<User> getUserInfo(String _userID) {
+    var _ref = _db.collection(_userCollection).document(_userID);
+    return _ref.get().then((_snapshot) {
+      return User.fromDocument(_snapshot);
+    });
+  }
+
+  Future<void> updateUserData(
+      String _uid, String _profileName, String _bio) async {
+    try {
+      return await _db.collection(_userCollection).document(_uid).updateData({
+        "profileName": _profileName,
+        "bio": _bio,
+      }).then((_) {
+        print("update image success");
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
 
   // Future<void> updateUserLastSeen(String _uid) async {
   //   try {

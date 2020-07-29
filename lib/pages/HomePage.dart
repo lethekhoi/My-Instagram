@@ -7,6 +7,7 @@ import 'package:my_instagram/pages/SearchPage.dart';
 import 'package:my_instagram/pages/TimeLinePage.dart';
 import 'package:my_instagram/pages/UploadPage.dart';
 import 'package:my_instagram/providers/google_sign_in_provider.dart';
+import 'package:my_instagram/widgets/ProgressWidget.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -74,20 +75,22 @@ class _HomePageState extends State<HomePage> {
         _auth = Provider.of<AuthProvider>(_context);
         //  DocumentSnapshot documentSnapshot = us;
         print("user home ${_auth.user}");
-        return PageView(
-          children: <Widget>[
-            TimeLinePage(),
-            SearchPage(),
-            UploadPage(),
-            TimeLinePage(),
-            ProfilePage(
-              userProfileID: _auth.user.uid,
-            ),
-          ],
-          controller: pageController,
-          onPageChanged: whenPageChanges,
-          physics: NeverScrollableScrollPhysics(),
-        );
+        return _auth.user.uid != null
+            ? PageView(
+                children: <Widget>[
+                  TimeLinePage(),
+                  SearchPage(),
+                  UploadPage(),
+                  TimeLinePage(),
+                  ProfilePage(
+                    userProfileID: _auth.user.uid,
+                  ),
+                ],
+                controller: pageController,
+                onPageChanged: whenPageChanges,
+                physics: NeverScrollableScrollPhysics(),
+              )
+            : circularProgress();
       },
     );
   }
