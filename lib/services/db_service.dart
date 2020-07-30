@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:my_instagram/models/post.dart';
 import 'package:my_instagram/models/user.dart';
 
 class DBService {
@@ -125,17 +126,15 @@ class DBService {
   //   }
   // }
 
-  // Stream<List<Conversation>> getUserConversations(String _userID) {
-  //   var _ref = _db
-  //       .collection(_userCollection)
-  //       .document(_userID)
-  //       .collection(_conversationCollection);
-  //   return _ref.snapshots().map((_snapshot) {
-  //     return _snapshot.documents.map((_doc) {
-  //       return Conversation.fromFirestore(_doc);
-  //     }).toList();
-  //   });
-  // }
+  Stream<List<Post>> getUserPost(String _userID) {
+    var _ref =
+        _db.collection(_userCollection).document(_userID).collection(_userPost).orderBy("timestamp", descending: true);
+    return _ref.snapshots().map((_snapshot) {
+      return _snapshot.documents.map((_doc) {
+        return Post.fromDocument(_doc);
+      }).toList();
+    });
+  }
 
   // Stream<List<Contact>> getUserInDB(String _searchName) {
   //   // 'foo' 'foo' =>'fooz' 'fooa' 'fooq'

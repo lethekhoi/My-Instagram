@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:my_instagram/models/post.dart';
 import 'package:my_instagram/models/user.dart';
 import 'package:my_instagram/pages/EditProfilePage.dart';
 import 'package:my_instagram/providers/google_sign_in_provider.dart';
 import 'package:my_instagram/services/db_service.dart';
 import 'package:my_instagram/services/navigation_service.dart';
 import 'package:my_instagram/widgets/HeaderWidget.dart';
+import 'package:my_instagram/widgets/PostTileWidget.dart';
+import 'package:my_instagram/widgets/PostWidget.dart';
 import 'package:my_instagram/widgets/ProgressWidget.dart';
 import 'package:provider/provider.dart';
 
@@ -20,6 +23,14 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   AuthProvider _auth;
+  String postOrientation = "grid";
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,16 +46,21 @@ class _ProfilePageState extends State<ProfilePage> {
     return Builder(builder: (BuildContext context) {
       _auth = Provider.of<AuthProvider>(context);
       return ListView(
+        shrinkWrap: true,
         children: <Widget>[
           _createProfileTopView(),
+          Divider(),
+          createListAndGridPostOrientation(),
+          Divider(),
+          displayProfilePost(),
         ],
       );
     });
   }
 
   Widget _createProfileTopView() {
-    return StreamBuilder<User>(
-      stream: DBService.instance.getUserData(this.widget.userProfileID),
+    return FutureBuilder<User>(
+      future: DBService.instance.getUserInfo(this.widget.userProfileID),
       builder: (context, snapshot) {
         var _userData = snapshot.data;
         return snapshot.hasData
@@ -192,5 +208,98 @@ class _ProfilePageState extends State<ProfilePage> {
         },
       ),
     );
+  }
+
+  Widget createListAndGridPostOrientation() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        IconButton(
+          onPressed: () => setOrientation("grid"),
+          icon: Icon(Icons.grid_on),
+          color: postOrientation == "grid"
+              ? Theme.of(context).primaryColor
+              : Colors.grey,
+        ),
+        IconButton(
+          onPressed: () => setOrientation("list"),
+          icon: Icon(Icons.list, size: 30),
+          color: postOrientation == "list"
+              ? Theme.of(context).primaryColor
+              : Colors.grey,
+        ),
+      ],
+    );
+  }
+
+  setOrientation(String orientation) {
+    setState(() {
+      this.postOrientation = orientation;
+    });
+  }
+
+  Widget displayProfilePost() {
+    return StreamBuilder<Object>(
+      stream: DBService.instance.getUserPost(_auth.user.uid),
+      builder: (context, snapshot) {
+        List<Post> listPost = snapshot.data;
+
+        if (!snapshot.hasData) {
+          return circularProgress();
+        } else {
+          if (listPost.length > 0) {
+            if (postOrientation == "grid") {
+              List<GridTile> gridTilesList = [];
+              listPost.forEach((eachPost) {
+                gridTilesList.add(GridTile(child: PostTile(eachPost)));
+              });
+              return GridView.count(
+                crossAxisCount: 3,
+                childAspectRatio: 1.0,
+                mainAxisSpacing: 1.5,
+                crossAxisSpacing: 1.5,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                children: gridTilesList,
+              );
+            } else {
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: listPost.length,
+                itemBuilder: (context, index) {
+                  return PostWidget(this.widget.userProfileID, listPost[index],
+                      getTotalNumberOfLikes(listPost[index].likes));
+                },
+              );
+            }
+          } else {
+            return Container(
+              alignment: Alignment.center,
+              height: 50,
+              width: 50,
+              child: Text(
+                "No post yet",
+                style: TextStyle(color: Colors.white),
+              ),
+            );
+          }
+        }
+      },
+    );
+  }
+
+  int getTotalNumberOfLikes(likes) {
+    if (likes == null) {
+      return 0;
+    }
+
+    int counter = 0;
+    likes.values.forEach((eachValue) {
+      if (eachValue == true) {
+        counter = counter + 1;
+      }
+    });
+    return counter;
   }
 }
