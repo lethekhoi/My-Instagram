@@ -169,9 +169,8 @@ class _ProfilePageState extends State<ProfilePage> {
           title: "Edit Profile", performFunction: editUserProfile);
     } else {
       return Container(
-        height: 50,
-        width: 200,
-        color: Colors.yellow,
+        height: 0,
+        width: 0,
       );
     }
   }
@@ -240,7 +239,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget displayProfilePost() {
     return StreamBuilder<Object>(
-      stream: DBService.instance.getUserPost(_auth.user.uid),
+      stream: DBService.instance.getUserPost(this.widget.userProfileID),
       builder: (context, snapshot) {
         List<Post> listPost = snapshot.data;
 
@@ -268,8 +267,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: listPost.length,
                 itemBuilder: (context, index) {
-                  return PostWidget(this.widget.userProfileID, listPost[index],
-                      getTotalNumberOfLikes(listPost[index].likes));
+                  return PostWidget(
+                    this.widget.userProfileID,
+                    listPost[index],
+                  );
                 },
               );
             }

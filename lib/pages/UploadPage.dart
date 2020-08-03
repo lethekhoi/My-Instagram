@@ -269,7 +269,7 @@ class _UploadPageState extends State<UploadPage> {
     String completeAddressInfo =
         '${mPlaceMark.subThoroughfare} ${mPlaceMark.thoroughfare}, ${mPlaceMark.subLocality} ${mPlaceMark.locality} ,${mPlaceMark.subAdministrativeArea} ${mPlaceMark.administrativeArea},${mPlaceMark.postalCode} ${mPlaceMark.country},';
 
-    String specificAddress = '${mPlaceMark.locality},${mPlaceMark.country}';
+    // String specificAddress = '${mPlaceMark.locality},${mPlaceMark.country}';
 
     locationTextEditingController.text = completeAddressInfo;
   }

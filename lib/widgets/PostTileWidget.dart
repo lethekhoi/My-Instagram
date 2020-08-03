@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_instagram/models/post.dart';
+import 'package:my_instagram/pages/PostScreenPage.dart';
+import 'package:my_instagram/services/navigation_service.dart';
 
 class PostTile extends StatelessWidget {
   final Post post;
@@ -7,7 +9,15 @@ class PostTile extends StatelessWidget {
   PostTile(this.post);
 
   displayFullPost(context) {
-    //Navigator.push(context, MaterialPageRoute(builder: (context)=>PostScreenPage(postId: post.postId, userId: post.ownerId)));
+    NavigationService.instance.navigateToRoute(
+      MaterialPageRoute(
+        builder: (BuildContext _context) {
+          return PostScreenPage(
+            post: this.post,
+          );
+        },
+      ),
+    );
   }
 
   @override

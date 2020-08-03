@@ -11,7 +11,6 @@ class DBService {
 
   String _userCollection = "Users";
   String _userPost = "usersPosts";
-  String _conversationCollection = "Conversations";
   Future<void> createUserInDB(String _uid, String _profileName,
       String _username, String _url, String _email) async {
     try {
@@ -99,6 +98,17 @@ class DBService {
     });
   }
 
+  Future<Post> getPostInfo(String _postOwnerID, String _posID) {
+    var _ref = _db
+        .collection(_userCollection)
+        .document(_postOwnerID)
+        .collection(_userPost)
+        .document(_posID);
+    return _ref.get().then((_snapshot) {
+      return Post.fromDocument(_snapshot);
+    });
+  }
+
   Future<void> updateUserData(
       String _uid, String _profileName, String _bio) async {
     try {
@@ -108,6 +118,20 @@ class DBService {
       }).then((_) {
         print("update image success");
       });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> updatePostLike(String currentOnlineUserID, String ownerID,
+      String posID, bool isLiked) async {
+    try {
+      return await _db
+          .collection(_userCollection)
+          .document(ownerID)
+          .collection(_userPost)
+          .document(posID)
+          .updateData({"likes.$currentOnlineUserID": isLiked});
     } catch (e) {
       print(e);
     }
@@ -127,13 +151,60 @@ class DBService {
   // }
 
   Stream<List<Post>> getUserPost(String _userID) {
-    var _ref =
-        _db.collection(_userCollection).document(_userID).collection(_userPost).orderBy("timestamp", descending: true);
+    var _ref = _db
+        .collection(_userCollection)
+        .document(_userID)
+        .collection(_userPost)
+        .orderBy("timestamp", descending: true);
     return _ref.snapshots().map((_snapshot) {
       return _snapshot.documents.map((_doc) {
         return Post.fromDocument(_doc);
       }).toList();
     });
+  }
+
+  //ADD LIKE
+
+  Future<void> addLike(
+      String ownerID, String posID, User currentUser, String postURL) async {
+    try {
+      return await _db
+          .collection("feed")
+          .document(ownerID)
+          .collection("feedItems")
+          .document(posID)
+          .setData({
+        "type": "like",
+        "username": currentUser.username,
+        "userId": currentUser.id,
+        "timestamp": DateTime.now(),
+        "url": postURL,
+        "postId": posID,
+        "userProfileImg": currentUser.url,
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  //REMOVE LIKE
+
+  Future<void> removeLike(String ownerID, String posID) async {
+    try {
+      return await _db
+          .collection("feed")
+          .document(ownerID)
+          .collection("feedItems")
+          .document(posID)
+          .get()
+          .then((document) {
+        if (document.exists) {
+          document.reference.delete();
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   // Stream<List<Contact>> getUserInDB(String _searchName) {

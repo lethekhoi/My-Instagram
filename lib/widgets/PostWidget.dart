@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -11,9 +12,8 @@ import 'package:provider/provider.dart';
 class PostWidget extends StatefulWidget {
   final profileID;
   final Post post;
-  final int likeCount;
 
-  PostWidget(this.profileID, this.post, this.likeCount);
+  PostWidget(this.profileID, this.post);
   @override
   _PostWidgetState createState() => _PostWidgetState();
 }
@@ -22,6 +22,16 @@ class _PostWidgetState extends State<PostWidget> {
   AuthProvider _auth;
   bool isLiked = false;
   bool showHeart = false;
+  Map listLike;
+  int numberOfLike;
+
+  @override
+  void initState() {
+    super.initState();
+    listLike = this.widget.post.likes;
+    numberOfLike = getTotalNumberOfLikes(listLike);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<AuthProvider>.value(
@@ -34,6 +44,8 @@ class _PostWidgetState extends State<PostWidget> {
     return Builder(
       builder: (BuildContext context) {
         _auth = Provider.of<AuthProvider>(context);
+        isLiked =
+            listLike[_auth.user.uid] == null ? false : listLike[_auth.user.uid];
         return Padding(
           padding: EdgeInsets.only(bottom: 12.0),
           child: Column(
@@ -101,7 +113,9 @@ class _PostWidgetState extends State<PostWidget> {
 
   Widget createPostPicture() {
     return GestureDetector(
-      onDoubleTap: () => print("post liked"),
+      onDoubleTap: () {
+        controlUserLikePost();
+      },
       child: Stack(
         alignment: Alignment.center,
         children: <Widget>[
@@ -112,6 +126,13 @@ class _PostWidgetState extends State<PostWidget> {
               child: Image.network(this.widget.post.url),
             ),
           ),
+          showHeart
+              ? Icon(
+                  Icons.favorite,
+                  size: 80.0,
+                  color: Colors.red,
+                )
+              : Text(""),
         ],
       ),
     );
@@ -123,9 +144,13 @@ class _PostWidgetState extends State<PostWidget> {
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Padding(padding: EdgeInsets.only(top: 40, left: 15)),
+            Padding(
+              padding: EdgeInsets.only(top: 40, left: 15),
+            ),
             GestureDetector(
-              onTap: () => print("like post"),
+              onTap: () {
+                controlUserLikePost();
+              },
               child: Icon(
                 isLiked ? Icons.favorite : Icons.favorite_border,
                 size: 28,
@@ -146,11 +171,9 @@ class _PostWidgetState extends State<PostWidget> {
         Row(
           children: <Widget>[
             Container(
-              margin: EdgeInsets.only(left: 20.0),
+              margin: EdgeInsets.only(left: 15.0),
               child: Text(
-                this.widget.likeCount == 0
-                    ? ""
-                    : "${this.widget.likeCount} likes",
+                numberOfLike == 0 ? "" : "$numberOfLike likes",
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
@@ -189,5 +212,67 @@ class _PostWidgetState extends State<PostWidget> {
     //       //return CommentsPage(postId: postId, postOwnerId: ownerId, postImageUrl: url);
     //     }
     // ));
+  }
+
+  controlUserLikePost() {
+    bool _liked = this.widget.post.likes[_auth.user.uid] == true;
+    if (_liked) {
+      //nếu đã thích thì xóa thích đi
+      print("xóa thích");
+      DBService.instance.updatePostLike(_auth.user.uid,
+          this.widget.post.ownerID, this.widget.post.posID, false);
+      removeLike();
+      setState(() {
+        listLike[_auth.user.uid] = false;
+        numberOfLike = getTotalNumberOfLikes(listLike);
+      });
+    } else {
+      //nếu chưa thích thì thêm thích vào
+      DBService.instance.updatePostLike(_auth.user.uid,
+          this.widget.post.ownerID, this.widget.post.posID, true);
+      addLike();
+      setState(() {
+        listLike[_auth.user.uid] = true;
+        numberOfLike = getTotalNumberOfLikes(listLike);
+        showHeart = true;
+      });
+      Timer(Duration(milliseconds: 800), () {
+        setState(() {
+          showHeart = false;
+        });
+      });
+    }
+  }
+
+  addLike() async {
+    bool isNotPostOwner = this.widget.profileID != _auth.user.uid;
+    if (isNotPostOwner) {
+      User currentUser = await DBService.instance.getUserInfo(_auth.user.uid);
+      await DBService.instance.addLike(this.widget.profileID,
+          this.widget.post.posID, currentUser, this.widget.post.url);
+    }
+  }
+
+  removeLike() async {
+    bool isNotPostOwner = this.widget.profileID != _auth.user.uid;
+
+    if (isNotPostOwner) {
+      await DBService.instance
+          .removeLike(this.widget.profileID, this.widget.profileID);
+    }
+  }
+
+  int getTotalNumberOfLikes(likes) {
+    if (likes == null) {
+      return 0;
+    }
+
+    int counter = 0;
+    likes.values.forEach((eachValue) {
+      if (eachValue == true) {
+        counter = counter + 1;
+      }
+    });
+    return counter;
   }
 }
