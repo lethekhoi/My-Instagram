@@ -4,8 +4,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:my_instagram/models/post.dart';
 import 'package:my_instagram/models/user.dart';
+import 'package:my_instagram/pages/CommentsPage.dart';
 import 'package:my_instagram/providers/google_sign_in_provider.dart';
 import 'package:my_instagram/services/db_service.dart';
+import 'package:my_instagram/services/navigation_service.dart';
 import 'package:my_instagram/widgets/ProgressWidget.dart';
 import 'package:provider/provider.dart';
 
@@ -159,7 +161,9 @@ class _PostWidgetState extends State<PostWidget> {
             ),
             Padding(padding: EdgeInsets.only(right: 10)),
             GestureDetector(
-              onTap: () => print("comment"),
+              onTap: () {
+                displayComments(context, this.widget.post);
+              },
               child: Icon(
                 Icons.chat_bubble_outline,
                 size: 28.0,
@@ -205,13 +209,14 @@ class _PostWidgetState extends State<PostWidget> {
     );
   }
 
-  displayComments(BuildContext context,
-      {String postId, String ownerId, String url}) {
-    // Navigator.push(context, MaterialPageRoute(builder: (context)
-    //     {
-    //       //return CommentsPage(postId: postId, postOwnerId: ownerId, postImageUrl: url);
-    //     }
-    // ));
+  displayComments(BuildContext context, Post _post) {
+    NavigationService.instance.navigateToRoute(
+      MaterialPageRoute(
+        builder: (context) {
+          return CommentsPage(post: _post);
+        },
+      ),
+    );
   }
 
   controlUserLikePost() {

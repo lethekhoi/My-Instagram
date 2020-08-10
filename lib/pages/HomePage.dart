@@ -83,7 +83,7 @@ class _HomePageState extends State<HomePage> {
                   UploadPage(),
                   TimeLinePage(),
                   ProfilePage(
-                    userProfileID: _auth.user.uid,
+                    userProfileID: "b8v3wCGLIRfR3Cwn49IFjJP1EYZ2",
                   ),
                 ],
                 controller: pageController,
