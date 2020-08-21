@@ -1,9 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:my_instagram/models/user.dart';
+import 'package:my_instagram/pages/ProfilePage.dart';
+import 'package:my_instagram/providers/google_sign_in_provider.dart';
 import 'package:my_instagram/services/db_service.dart';
+import 'package:my_instagram/services/navigation_service.dart';
 import 'package:my_instagram/widgets/HeaderWidget.dart';
 import 'package:my_instagram/widgets/ProgressWidget.dart';
+import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -12,6 +16,7 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage>
     with AutomaticKeepAliveClientMixin<SearchPage> {
+  AuthProvider _auth;
   String _searchText;
   TextEditingController searchTextEditingController = TextEditingController();
 
@@ -32,7 +37,11 @@ class _SearchPageState extends State<SearchPage>
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: _searchPageHeader(),
-      body: _userListView(),
+      body: ChangeNotifierProvider<AuthProvider>.value(
+        value: AuthProvider.instance,
+        child: _userListView(),
+      ),
+      // body: _userListView(),
     );
   }
 
@@ -71,21 +80,23 @@ class _SearchPageState extends State<SearchPage>
   }
 
   Widget _userListView() {
-    return _searchText.length == 0
-        ? _displayNoSearchResultScreen()
-        : StreamBuilder<List<User>>(
-            stream: DBService.instance.searchUser(_searchText),
-            builder: (_context, _snapshot) {
-              var _usersData = _snapshot.data;
-              if (_usersData != null) {}
-              return _snapshot.hasData
-                  ? displayUsersFoundScreen(_context, _usersData)
-                  : circularProgress();
-            });
+    return Builder(builder: (BuildContext context) {
+      _auth = Provider.of<AuthProvider>(context);
+      return _searchText.length == 0
+          ? _displayNoSearchResultScreen()
+          : StreamBuilder<List<User>>(
+              stream: DBService.instance.searchUser(_searchText),
+              builder: (_context, _snapshot) {
+                var _usersData = _snapshot.data;
+                if (_usersData != null) {}
+                return _snapshot.hasData
+                    ? displayUsersFoundScreen(_context, _usersData)
+                    : circularProgress();
+              });
+    });
   }
 
   Widget _displayNoSearchResultScreen() {
-    final Orientation orientation = MediaQuery.of(context).orientation;
     return Container(
       child: Center(
         child: ListView(
@@ -124,7 +135,10 @@ class _SearchPageState extends State<SearchPage>
           margin:
               EdgeInsetsDirectional.only(top: 5, start: 10, end: 10, bottom: 5),
           child: ListTile(
-            onTap: () {},
+            onTap: () {
+              displayUserProfile(_context,
+                  userProfileID: _usersData[_index].id);
+            },
             leading: Container(
               height: 50,
               width: 50,
@@ -158,6 +172,19 @@ class _SearchPageState extends State<SearchPage>
           ),
         );
       },
+    );
+  }
+
+  displayUserProfile(BuildContext context, {String userProfileID}) {
+    NavigationService.instance.navigateToRoute(
+      MaterialPageRoute(
+        builder: (BuildContext _context) {
+          return ProfilePage(
+            userProfileID: userProfileID,
+            currentUserID: _auth.user.uid,
+          );
+        },
+      ),
     );
   }
 }

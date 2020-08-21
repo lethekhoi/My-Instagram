@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:my_instagram/models/post.dart';
 import 'package:my_instagram/models/user.dart';
@@ -12,9 +13,10 @@ import 'package:my_instagram/widgets/ProgressWidget.dart';
 import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
+  final String currentUserID;
   final String userProfileID;
 
-  const ProfilePage({Key key, this.userProfileID})
+  const ProfilePage({Key key, this.userProfileID, this.currentUserID})
       : super(key: key); // user id ghé thăm. có thể là của chính mình
 
   @override
@@ -24,11 +26,61 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   AuthProvider _auth;
   String postOrientation = "grid";
+  bool following = false;
+  int countTotalFollowers = 0;
+  int countTotalFollowings = 0;
+  int countTotalPost = 0;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    getPostCount();
+    getAllFollowers();
+    getAllFollowings();
+    checkIfAlreadyFollowing();
+  }
+
+  getPostCount() async {
+    int count =
+        await DBService.instance.getUserPostCount(this.widget.userProfileID);
+    if (this.mounted) {
+      setState(() {
+        countTotalPost = count;
+      });
+    }
+  }
+
+  getAllFollowings() async {
+    QuerySnapshot querySnapshot =
+        await DBService.instance.getAllFollowings(this.widget.userProfileID);
+    if (this.mounted) {
+      setState(() {
+        countTotalFollowings = querySnapshot.documents.length;
+      });
+    }
+  }
+
+  checkIfAlreadyFollowing() async {
+    DocumentSnapshot documentSnapshot = await DBService.instance
+        .checkIfAlreadyFollowing(
+            this.widget.currentUserID, this.widget.userProfileID);
+    if (this.mounted) {
+      setState(() {
+        following = documentSnapshot.exists;
+        print("@@");
+      });
+    }
+  }
+
+  getAllFollowers() async {
+    QuerySnapshot querySnapshot =
+        await DBService.instance.getAllFollowers(this.widget.userProfileID);
+    if (this.mounted) {
+      setState(() {
+        countTotalFollowers = querySnapshot.documents.length;
+      });
+    }
   }
 
   @override
@@ -87,9 +139,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
-                                  createColumns("Posts", 0),
-                                  createColumns("Followers", 0),
-                                  createColumns("Following", 0),
+                                  createColumns("Posts", countTotalPost),
+                                  createColumns(
+                                      "Followers", countTotalFollowers),
+                                  createColumns(
+                                      "Following", countTotalFollowings),
                                 ],
                               ),
                             ],
@@ -105,7 +159,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           _userData.profileName,
                           style: TextStyle(
                               color: Colors.white,
-                              fontSize: 13,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -168,19 +222,23 @@ class _ProfilePageState extends State<ProfilePage> {
       return createButtonAndFunction(
           title: "Edit Profile", performFunction: editUserProfile);
     } else {
-      return Container(
-        height: 0,
-        width: 0,
-      );
+      if (following) {
+        return createButtonAndFunction(
+            title: "Unfollow", performFunction: unfollowUser);
+      } else {
+        return createButtonAndFunction(
+            title: "Follow", performFunction: followUser);
+      }
     }
   }
 
   createButtonAndFunction({String title, Function performFunction}) {
+    Color color = title == "Follow" ? Colors.blue : Colors.black;
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: color,
           border: Border.all(
             color: Colors.grey,
           ),
@@ -207,6 +265,25 @@ class _ProfilePageState extends State<ProfilePage> {
         },
       ),
     );
+  }
+
+  followUser() async {
+    setState(() {
+      following = true;
+    });
+    var currentUser = await DBService.instance.getUserInfo(_auth.user.uid);
+    await DBService.instance
+        .addFollower(_auth.user.uid, this.widget.userProfileID, currentUser);
+    getAllFollowers();
+  }
+
+  unfollowUser() async {
+    setState(() {
+      following = false;
+    });
+    await DBService.instance
+        .removeFollower(_auth.user.uid, this.widget.userProfileID);
+    getAllFollowers();
   }
 
   Widget createListAndGridPostOrientation() {

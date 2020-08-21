@@ -13,6 +13,7 @@ class DBService {
   String _userCollection = "Users";
   String _userPost = "usersPosts";
   String _commentCollection = "comments";
+  String _followersCollection = "followers";
 
   Future<void> createUserInDB(String _uid, String _profileName,
       String _username, String _url, String _email) async {
@@ -166,6 +167,17 @@ class DBService {
     });
   }
 
+//get user post
+  Future<int> getUserPostCount(String _userID) async {
+    QuerySnapshot querySnapshot = await _db
+        .collection(_userCollection)
+        .document(_userID)
+        .collection(_userPost)
+        .orderBy("timestamp", descending: true)
+        .getDocuments();
+    return querySnapshot.documents.length;
+  }
+
   //ADD LIKE
 
   Future<void> addLike(
@@ -261,5 +273,106 @@ class DBService {
     } catch (e) {
       print(e);
     }
+  }
+
+  Future<void> removeFollower(String currentUserID, String visitUserID) async {
+    try {
+      await _db
+          .collection(_followersCollection)
+          .document(visitUserID)
+          .collection("userFollowers")
+          .document(currentUserID)
+          .get()
+          .then((document) {
+        if (document.exists) {
+          document.reference.delete();
+        }
+      });
+      await _db
+          .collection(_followersCollection)
+          .document(currentUserID)
+          .collection("userFollowing")
+          .document(visitUserID)
+          .get()
+          .then((document) {
+        if (document.exists) {
+          document.reference.delete();
+        }
+      });
+
+      await _db
+          .collection("feed")
+          .document(visitUserID)
+          .collection("feedItems")
+          .document(currentUserID)
+          .get()
+          .then((document) {
+        if (document.exists) {
+          document.reference.delete();
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> addFollower(
+      String currentUserID, String visitUserID, User currentUser) async {
+    try {
+      await _db
+          .collection(_followersCollection)
+          .document(visitUserID)
+          .collection("userFollowers")
+          .document(currentUserID)
+          .setData({});
+      await _db
+          .collection(_followersCollection)
+          .document(currentUserID)
+          .collection("userFollowing")
+          .document(visitUserID)
+          .setData({});
+
+      await _db
+          .collection("feed")
+          .document(visitUserID)
+          .collection("feedItems")
+          .document(currentUserID)
+          .setData({
+        "type": "follow",
+        "ownerId": visitUserID,
+        "username": currentUser.username,
+        "timestamp": DateTime.now(),
+        "userProfileImg": currentUser.url,
+        "userId": currentUserID,
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<QuerySnapshot> getAllFollowers(String visitUserID) async {
+    return await _db
+        .collection(_followersCollection)
+        .document(visitUserID)
+        .collection("userFollowers")
+        .getDocuments();
+  }
+
+  Future<QuerySnapshot> getAllFollowings(String visitUserID) async {
+    return await _db
+        .collection(_followersCollection)
+        .document(visitUserID)
+        .collection("userFollowing")
+        .getDocuments();
+  }
+
+  Future<DocumentSnapshot> checkIfAlreadyFollowing(
+      String currentUserID, String visitUserID) async {
+    return await _db
+        .collection(_followersCollection)
+        .document(visitUserID)
+        .collection("userFollowers")
+        .document(currentUserID)
+        .get();
   }
 }
