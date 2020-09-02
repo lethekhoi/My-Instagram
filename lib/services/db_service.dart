@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_instagram/models/comment.dart';
+import 'package:my_instagram/models/notifications_item.dart';
 import 'package:my_instagram/models/post.dart';
 import 'package:my_instagram/models/user.dart';
 
@@ -14,7 +15,7 @@ class DBService {
   String _userPost = "usersPosts";
   String _commentCollection = "comments";
   String _followersCollection = "followers";
-
+  String _feedItemCollection = "feedItems";
   Future<void> createUserInDB(String _uid, String _profileName,
       String _username, String _url, String _email) async {
     try {
@@ -167,6 +168,20 @@ class DBService {
     });
   }
 
+  Stream<List<NotificationsItem>> getNotificationsItem(String _userID) {
+    var _ref = _db
+        .collection("feed")
+        .document(_userID)
+        .collection(_feedItemCollection)
+        .orderBy("timestamp", descending: true)
+        .limit(60);
+    return _ref.snapshots().map((_snapshot) {
+      return _snapshot.documents.map((_doc) {
+        return NotificationsItem.fromDocument(_doc);
+      }).toList();
+    });
+  }
+
 //get user post
   Future<int> getUserPostCount(String _userID) async {
     QuerySnapshot querySnapshot = await _db
@@ -191,10 +206,10 @@ class DBService {
           .setData({
         "type": "like",
         "username": currentUser.username,
-        "userId": currentUser.id,
+        "userID": currentUser.id,
         "timestamp": DateTime.now(),
         "url": postURL,
-        "postId": posID,
+        "postID": posID,
         "userProfileImg": currentUser.url,
       });
     } catch (e) {
@@ -339,11 +354,11 @@ class DBService {
           .document(currentUserID)
           .setData({
         "type": "follow",
-        "ownerId": visitUserID,
+        "ownerID": visitUserID,
         "username": currentUser.username,
         "timestamp": DateTime.now(),
         "userProfileImg": currentUser.url,
-        "userId": currentUserID,
+        "userID": currentUserID,
       });
     } catch (e) {
       print(e);

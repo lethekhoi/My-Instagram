@@ -59,7 +59,7 @@ class _CommentsPageState extends State<CommentsPage> {
         _auth = Provider.of<AuthProvider>(_context);
         return Container(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[

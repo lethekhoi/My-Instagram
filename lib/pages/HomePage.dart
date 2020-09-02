@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:my_instagram/pages/NotificationsPage.dart';
 import 'package:my_instagram/pages/ProfilePage.dart';
 import 'package:my_instagram/pages/SearchPage.dart';
 import 'package:my_instagram/pages/TimeLinePage.dart';
@@ -81,9 +82,10 @@ class _HomePageState extends State<HomePage> {
                   TimeLinePage(),
                   SearchPage(),
                   UploadPage(),
-                  TimeLinePage(),
+                  NotificationsPage(),
                   ProfilePage(
-                    userProfileID: _auth.user.uid,currentUserID: _auth.user.uid,
+                    userProfileID: _auth.user.uid,
+                    currentUserID: _auth.user.uid,
                   ),
                 ],
                 controller: pageController,
