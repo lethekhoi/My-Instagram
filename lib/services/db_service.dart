@@ -19,7 +19,7 @@ class DBService {
   Future<void> createUserInDB(String _uid, String _profileName,
       String _username, String _url, String _email) async {
     try {
-      return await _db.collection(_userCollection).document(_uid).setData({
+      await _db.collection(_userCollection).document(_uid).setData({
         "id": _uid,
         "profileName": _profileName,
         "username": _username,
@@ -28,6 +28,12 @@ class DBService {
         "bio": "",
         "timestamp": DateTime.now(),
       });
+      // await _db
+      //     .collection("followers")
+      //     .document(_uid)
+      //     .collection("userFollowers")
+      //     .document(_uid)
+      //     .setData({});
     } catch (e) {
       print(e);
     }

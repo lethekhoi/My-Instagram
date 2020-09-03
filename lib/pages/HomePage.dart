@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -17,6 +20,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   PageController pageController;
   AuthProvider _auth;
   int getPageIndex = 0;
@@ -49,6 +54,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: ChangeNotifierProvider<AuthProvider>.value(
         value: AuthProvider.instance,
         child: _homePageUI(),
@@ -76,24 +82,44 @@ class _HomePageState extends State<HomePage> {
         _auth = Provider.of<AuthProvider>(_context);
         //  DocumentSnapshot documentSnapshot = us;
         print("user home ${_auth.user}");
-        return _auth.user.uid != null
-            ? PageView(
-                children: <Widget>[
-                  TimeLinePage(),
-                  SearchPage(),
-                  UploadPage(),
-                  NotificationsPage(),
-                  ProfilePage(
-                    userProfileID: _auth.user.uid,
-                    currentUserID: _auth.user.uid,
-                  ),
-                ],
-                controller: pageController,
-                onPageChanged: whenPageChanges,
-                physics: NeverScrollableScrollPhysics(),
-              )
+        configureRealTimePushNotifications();
+        return _auth.user != null
+            ? _auth.user.uid != null
+                ? PageView(
+                    children: <Widget>[
+                      TimeLinePage(
+                        currentUserID: _auth.user.uid,
+                      ),
+                      SearchPage(),
+                      UploadPage(),
+                      NotificationsPage(),
+                      ProfilePage(
+                        userProfileID: _auth.user.uid,
+                        currentUserID: _auth.user.uid,
+                      ),
+                    ],
+                    controller: pageController,
+                    onPageChanged: whenPageChanges,
+                    physics: NeverScrollableScrollPhysics(),
+                  )
+                : circularProgress()
             : circularProgress();
       },
     );
+  }
+
+  configureRealTimePushNotifications() {
+    if (Platform.isIOS) {
+      getIOSPermissions();
+    }
+  }
+
+  getIOSPermissions() {
+    _firebaseMessaging.requestNotificationPermissions(
+        IosNotificationSettings(alert: true, badge: true, sound: true));
+
+    _firebaseMessaging.onIosSettingsRegistered.listen((settings) {
+      print("Settings Registered :  $settings");
+    });
   }
 }

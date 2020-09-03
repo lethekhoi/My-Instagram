@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:my_instagram/models/post.dart';
 import 'package:my_instagram/models/user.dart';
 import 'package:my_instagram/pages/CommentsPage.dart';
+import 'package:my_instagram/pages/ProfilePage.dart';
 import 'package:my_instagram/providers/google_sign_in_provider.dart';
 import 'package:my_instagram/services/db_service.dart';
 import 'package:my_instagram/services/navigation_service.dart';
@@ -49,7 +50,7 @@ class _PostWidgetState extends State<PostWidget> {
         isLiked =
             listLike[_auth.user.uid] == null ? false : listLike[_auth.user.uid];
         return Padding(
-          padding: EdgeInsets.only(bottom: 12.0),
+          padding: EdgeInsets.only(bottom: 10.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -76,15 +77,15 @@ class _PostWidgetState extends State<PostWidget> {
           leading: Padding(
             padding: const EdgeInsets.only(top: 5),
             child: CircleAvatar(
-              radius: 15,
+              radius: 20,
               backgroundImage: NetworkImage(_userData.url),
               backgroundColor: Colors.blueAccent,
             ),
           ),
           title: GestureDetector(
-            onTap: () => print("show profile"),
+            onTap: () => showProfile(this.widget.profileID),
             child: Text(
-              _userData.profileName,
+              _userData.username,
               style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -279,5 +280,16 @@ class _PostWidgetState extends State<PostWidget> {
       }
     });
     return counter;
+  }
+
+  showProfile(String profileID) {
+    NavigationService.instance.navigateToRoute(
+      MaterialPageRoute(
+        builder: (BuildContext _context) {
+          return ProfilePage(
+              currentUserID: _auth.user.uid, userProfileID: profileID);
+        },
+      ),
+    );
   }
 }
