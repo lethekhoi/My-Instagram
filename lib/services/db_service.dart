@@ -3,6 +3,7 @@ import 'package:my_instagram/models/comment.dart';
 import 'package:my_instagram/models/notifications_item.dart';
 import 'package:my_instagram/models/post.dart';
 import 'package:my_instagram/models/user.dart';
+import 'package:my_instagram/services/cloud_storage_service.dart';
 
 class DBService {
   static DBService instance = DBService();
@@ -89,6 +90,56 @@ class DBService {
         "description": _description,
         "location": _location,
         "url": _url,
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  //delete Post
+  Future<void> removePost(String ownerID, String posID) async {
+    try {
+      await CloudStorageService.instance.removePost(posID);
+      await _db
+          .collection("Users")
+          .document(ownerID)
+          .collection("usersPosts")
+          .document(posID)
+          .get()
+          .then((document) {
+        if (document.exists) {
+          document.reference.delete();
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> removePostComment(String ownerID, String posID) async {
+    try {
+      QuerySnapshot querySnapshot = await _db
+          .collection("feed")
+          .document(ownerID)
+          .collection("feedItems")
+          .where("postID", isEqualTo: posID)
+          .getDocuments();
+      querySnapshot.documents.forEach((document) {
+        if (document.exists) {
+          document.reference.delete();
+        }
+      });
+
+      QuerySnapshot commentsQuerySnapshot = await _db
+          .collection(_commentCollection)
+          .document(posID)
+          .collection("comments")
+          .getDocuments();
+
+      commentsQuerySnapshot.documents.forEach((document) {
+        if (document.exists) {
+          document.reference.delete();
+        }
       });
     } catch (e) {
       print(e);

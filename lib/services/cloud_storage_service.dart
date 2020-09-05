@@ -29,6 +29,15 @@ class CloudStorageService {
     }
   }
 
+  //remove post
+  Future<StorageTaskSnapshot> removePost(var posID) {
+    try {
+      return _baseRef.child(_post).child("post_$posID.jpg").delete();
+    } catch (e) {
+      print(e);
+    }
+  }
+
   Future<StorageTaskSnapshot> uploadMediaMessage(String _uid, File _file) {
     var _timestamp = Timestamp.now();
     var _fileName = basename(_file.path);

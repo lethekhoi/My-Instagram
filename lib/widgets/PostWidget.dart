@@ -105,7 +105,7 @@ class _PostWidgetState extends State<PostWidget> {
               ? IconButton(
                   icon: Icon(Icons.more_vert, color: Colors.white),
                   onPressed: () {
-                    print("delete");
+                    controlPostDelete(context, this.widget.post.posID);
                   },
                 )
               : Text(""),
@@ -291,5 +291,39 @@ class _PostWidgetState extends State<PostWidget> {
         },
       ),
     );
+  }
+
+  controlPostDelete(BuildContext _context, String posID) {
+    return showDialog(
+        context: _context,
+        builder: (_context) {
+          return SimpleDialog(
+            backgroundColor: new Color.fromRGBO(38, 38, 38, 1),
+            children: <Widget>[
+              SimpleDialogOption(
+                child: Text(
+                  "Delete",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                onPressed: () async {
+                  NavigationService.instance.goBack();
+                  NavigationService.instance.goBack();
+                  await DBService.instance.removePost(_auth.user.uid, posID);
+                  await DBService.instance
+                      .removePostComment(_auth.user.uid, posID);
+                },
+              ),
+              SimpleDialogOption(
+                child: Text(
+                  "Cancel",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                onPressed: () {
+                  NavigationService.instance.goBack();
+                },
+              ),
+            ],
+          );
+        });
   }
 }

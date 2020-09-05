@@ -22,7 +22,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: header(context, title: "Notifications"),
+      appBar: header(context, title: "Notifications", disableBackbutton: true),
       body: ChangeNotifierProvider<AuthProvider>.value(
         value: AuthProvider.instance,
         child: notificationPageUI(),
@@ -66,7 +66,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                       TextSpan(
                                           text: configureMediaText(
                                               _notificationItemData[_index]),
-                                          style: TextStyle(color: Colors.white)),
+                                          style:
+                                              TextStyle(color: Colors.white)),
                                     ],
                                   ),
                                 ),

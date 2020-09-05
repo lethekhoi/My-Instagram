@@ -47,6 +47,7 @@ class _SearchPageState extends State<SearchPage>
 
   Widget _searchPageHeader() {
     return AppBar(
+      automaticallyImplyLeading: false,
       backgroundColor: Colors.black,
       title: TextField(
         controller: searchTextEditingController,

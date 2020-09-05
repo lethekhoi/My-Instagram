@@ -201,6 +201,7 @@ class _UploadPageState extends State<UploadPage> {
         context: context,
         builder: (context) {
           return SimpleDialog(
+            backgroundColor: new Color.fromRGBO(38, 38, 38, 1),
             title: Text(
               "New Post",
               style:

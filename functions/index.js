@@ -108,7 +108,7 @@ exports.onCreateFollower = functions.firestore
 
 
 
-  exports.onDeleteFollower = functions.firestore
+exports.onDeleteFollower = functions.firestore
   .document("/followers/{userId}/userFollowers/{followerId}")
   .onDelete(async (snapshot, context) => {
 
@@ -123,13 +123,13 @@ exports.onCreateFollower = functions.firestore
       .collection("timeline")
       .doc(followerId)
       .collection("timelinePosts")
-      .where("ownerId", "==", userId);
+      .where("ownerID", "==", userId);
 
     const querySnapshot = await timelinePostsRef.get();
     querySnapshot.forEach(doc => {
-      if (doc.exists)
-      {
+      if (doc.exists) {
         doc.ref.delete();
+        console.log("Follower Deleted okkkkkk");
       }
     });
   });
